@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TeamTasks</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="login-container">
+        <div class="login-card">
+            <div class="header">
+                <h1>TeamTasks</h1>
+                <p>Sign in to your team workspace</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+
+                <!-- Hidden by default, injected via JS on error -->
+                <div id="errorMessage" class="error-message" hidden></div>
+                
+                <button type="submit" id="submitBtn">Log In</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent standard form submission
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Reset error state and disable button during request
+            errorMessage.hidden = true;
+            errorMessage.textContent = '';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.ok) {
+                    // Success: Redirect to the dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    // Failure: Display backend error message
+                    errorMessage.textContent = data.error || 'Invalid credentials. Please try again.';
+                    errorMessage.hidden = false;
+                }
+            } catch (error) {
+                // Network or parsing error
+                errorMessage.textContent = 'An error occurred. Please check your connection.';
+                errorMessage.hidden = false;
+            } finally {
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log In';
+            }
+        });
+    </script>
+</body>
+</html>
