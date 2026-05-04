@@ -10,3 +10,7 @@ A private, collaborative task management backend designed for a 4-person team. B
 1. **Clone the repository and navigate to the directory:**
    ```bash
    cd task-manager
+   npm i
+   node db/schema.js
+   ndoe db/seed.js
+   node index.js
