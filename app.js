@@ -8,6 +8,7 @@ const path = require('path');
 
 // Import route handlers
 const authRoutes = require('./routes/auth');
+const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 
 // Initialize the Express application
@@ -37,6 +38,7 @@ app.use(session({
 
 // Mount API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 
 // --- Error Handling ---

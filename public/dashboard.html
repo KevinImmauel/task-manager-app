@@ -3,56 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TeamTasks</title>
+    <title>Dashboard - Task-Manager-App</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js" defer></script>
 </head>
 <body class="dashboard-body">
     <!-- Navigation -->
     <nav class="top-nav">
-        <div class="nav-brand">TeamTasks</div>
+        <div class="nav-brand">Task-Manager-App</div>
         <div class="nav-user">
             <span id="welcomeMessage">Loading...</span>
             <button id="logoutBtn" class="btn-secondary">Log Out</button>
         </div>
     </nav>
 
-    <!-- Main Kanban Board -->
-    <main class="board-container">
-        <!-- To Do Column -->
-        <div class="column">
-            <div class="column-header">
-                <h2>To Do</h2>
-                <span class="count" id="todo-count">0</span>
-            </div>
-            <div class="task-list" id="col-todo"></div>
+    <!-- Projects View -->
+    <section id="projectsView">
+        <div class="projects-header">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem; padding: 0 2rem;">Projects</h2>
+        </div>
+        <div class="projects-grid" id="projectsGrid">
+            <!-- Project cards will be injected here -->
+        </div>
+    </section>
+
+    <!-- Tasks View (Hidden by default) -->
+    <section id="tasksView" hidden>
+        <div style="padding: 1rem 2rem 0;">
+            <button id="backToProjectsBtn" class="btn-secondary" style="width: auto;">← Back to Projects</button>
+            <h2 id="currentProjectTitle" style="display: inline-block; margin-left: 1rem;">Project Tasks</h2>
         </div>
 
-        <!-- In Progress Column -->
-        <div class="column">
-            <div class="column-header">
-                <h2>In Progress</h2>
-                <span class="count" id="inprogress-count">0</span>
+        <!-- Statistics Banner -->
+        <section class="stats-banner">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Total Tasks</div>
             </div>
-            <div class="task-list" id="col-in_progress"></div>
-        </div>
-
-        <!-- Done Column -->
-        <div class="column">
-            <div class="column-header">
-                <h2>Done</h2>
-                <span class="count" id="done-count">0</span>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-progress">0%</div>
+                <div class="stat-label">Completion</div>
             </div>
-            <div class="task-list" id="col-done"></div>
-        </div>
-    </main>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-review">0</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-my-tasks">0</div>
+                <div class="stat-label">Assigned To Me</div>
+            </div>
+        </section>
 
-    <!-- Floating Action Button -->
-    <button id="fabNewTask" class="fab">+</button>
+        <!-- Main Kanban Board -->
+        <main class="board-container">
+            <div class="column">
+                <div class="column-header">
+                    <h2>To Do</h2>
+                    <span class="count" id="todo-count">0</span>
+                </div>
+                <div class="task-list" id="col-todo"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <h2>In Progress</h2>
+                    <span class="count" id="inprogress-count">0</span>
+                </div>
+                <div class="task-list" id="col-in_progress"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <h2>In Review</h2>
+                    <span class="count" id="inreview-count">0</span>
+                </div>
+                <div class="task-list" id="col-in_review"></div>
+            </div>
+
+            <div class="column">
+                <div class="column-header">
+                    <h2>Done</h2>
+                    <span class="count" id="done-count">0</span>
+                </div>
+                <div class="task-list" id="col-done"></div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Floating Action Buttons -->
+    <button id="fabNewProject" class="fab" hidden>+</button>
+    <button id="fabNewTask" class="fab" hidden>+</button>
+
+    <!-- New Project Modal -->
+    <div id="projectModal" class="modal-overlay" hidden>
+        <div class="modal-content login-card">
+            <div class="header" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem;">New Project</h2>
+            </div>
+            <form id="newProjectForm">
+                <div class="form-group">
+                    <label for="projectName">Project Name</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label for="projectDesc">Description</label>
+                    <input type="text" id="projectDesc">
+                </div>
+                <div class="form-group">
+                    <label for="projectAssignee">Assign Devs (Hold Ctrl/Cmd)</label>
+                    <select id="projectAssignee" class="form-select" multiple size="4">
+                        <!-- Options injected by JS -->
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                    <button type="button" id="cancelProjectBtn" class="btn-secondary" style="margin-top: 0;">Cancel</button>
+                    <button type="submit" style="margin-top: 0;">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- New Task Modal (Inline Form) -->
     <div id="taskModal" class="modal-overlay" hidden>
-        <div class="modal-content login-card"> <!-- Reusing login-card styles -->
+        <div class="modal-content login-card">
             <div class="header" style="margin-bottom: 1.5rem;">
                 <h2 style="font-size: 1.5rem;">New Task</h2>
             </div>
@@ -66,6 +139,10 @@
                     <input type="text" id="taskDesc">
                 </div>
                 <div class="form-group">
+                    <label for="taskCategory">Category</label>
+                    <input type="text" id="taskCategory" placeholder="e.g. Frontend, API, Bug" required>
+                </div>
+                <div class="form-group">
                     <label for="taskPriority">Priority</label>
                     <select id="taskPriority" class="form-select">
                         <option value="low">Low</option>
@@ -74,8 +151,10 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="taskAssignee">Assign To (User ID)</label>
-                    <input type="number" id="taskAssignee" placeholder="e.g. 1 for Alice" required>
+                    <label for="taskAssignee">Assign To (Hold Ctrl/Cmd)</label>
+                    <select id="taskAssignee" class="form-select" multiple size="4">
+                        <!-- Options injected by JS -->
+                    </select>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
                     <button type="button" id="cancelTaskBtn" class="btn-secondary" style="margin-top: 0;">Cancel</button>
