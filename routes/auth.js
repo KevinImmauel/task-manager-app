@@ -4,7 +4,6 @@ const db = require('../db/schema');
 
 const router = express.Router();
 
-
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -13,7 +12,6 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-        
         const stmt = db.prepare('SELECT * FROM users WHERE username = ?');
         const user = stmt.get(username);
 
@@ -21,21 +19,21 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        
         const match = await bcrypt.compare(password, user.password_hash);
         
         if (!match) {
             return res.status(401).json({ error: 'Invalid username or password' });
         }
 
-        
         req.session.userId = user.id;
+        req.session.role = user.role; // Save role in session
 
         return res.json({ 
             ok: true, 
             user: { 
                 id: user.id, 
-                username: user.username 
+                username: user.username,
+                role: user.role // Send role to frontend
             } 
         });
 
@@ -45,36 +43,28 @@ router.post('/login', async (req, res) => {
     }
 });
 
-
 router.post('/logout', (req, res) => {
-    
     req.session.destroy((err) => {
         if (err) {
             console.error('Logout error:', err);
             return res.status(500).json({ error: 'Could not log out' });
         }
-        
-        
         res.clearCookie('connect.sid'); 
-        
         return res.json({ ok: true });
     });
 });
 
-
 router.get('/me', (req, res) => {
-    
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ error: 'Not logged in' });
     }
 
     try {
-        
-        const stmt = db.prepare('SELECT id, username FROM users WHERE id = ?');
+        // Fetch the user's role as well
+        const stmt = db.prepare('SELECT id, username, role FROM users WHERE id = ?');
         const user = stmt.get(req.session.userId);
 
         if (!user) {
-            
             return res.status(401).json({ error: 'User no longer exists' });
         }
 
@@ -82,6 +72,20 @@ router.get('/me', (req, res) => {
 
     } catch (error) {
         console.error('Get /me error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.get('/users', (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ error: 'Not logged in' });
+    }
+
+    try {
+        const users = db.prepare('SELECT id, username FROM users').all();
+        return res.json(users);
+    } catch (error) {
+        console.error('Get users error:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

@@ -5,16 +5,17 @@ const db = require('./schema');
 const seedUsers = () => {
     console.log('Starting database seed...');
 
-    const usersToSeed = [
-        { username: 'alice', password: 'alice123' },
-        { username: 'bob', password: 'bob123' },
-        { username: 'carol', password: 'carol123' },
-        { username: 'dave', password: 'dave123' }
+const usersToSeed = [
+        { username: 'alice', password: 'alice123', role: 'lead' },
+        { username: 'bob', password: 'bob123', role: 'lead' },
+        { username: 'carol', password: 'carol123', role: 'dev' },
+        { username: 'dave', password: 'dave123', role: 'dev' }
     ];
+
+    const insertUserStmt = db.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)');
 
     // Prepare our SQL statements ahead of time for efficiency
     const checkUserStmt = db.prepare('SELECT id FROM users WHERE username = ?');
-    const insertUserStmt = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)');
 
     // Execute the seed inside a transaction for safety and speed
     const insertMany = db.transaction((users) => {
@@ -29,7 +30,7 @@ const seedUsers = () => {
                 const hash = bcrypt.hashSync(user.password, 10);
                 
                 // Insert the new user
-                insertUserStmt.run(user.username, hash);
+                insertUserStmt.run(user.username, hash, user.role);
                 console.log(`[+] Created: User '${user.username}' added successfully.`);
             }
         }
